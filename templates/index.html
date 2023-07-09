@@ -1,10 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            width: 100%;
+            height: 80px;
+            background-color: #282c34;
+        }
+
+        .logo {
+            width: 100px;
+            height: 80px;
+            margin-left: 2%;
+        }
+
+        .username, .drop {
+            width: 300px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        option {
+            padding: 10px;
+        }
+
+        textarea {
+            width: 300px;
+            height: 200px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .box-form {
+            margin-top: 30px;
+        }
+
+        .box-form form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .username::placeholder, select {
+            padding-left: 18px;
+        }
+
+        textarea::placeholder {
+            padding-left: 18px;
+            padding-top: 10px;
+        }
+
+        .submit {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            background-color: blue;
+            font-size: 15px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .box-comment {
+            margin-top: 50px;
+            width: 700px;
+            height: auto;
+            padding: 20px;
+            border: 2px solid black;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .comment {
+            width: 600px;
+            height: auto;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+        }
+
+        .category-box {
+            padding: 10px 20px;
+            background-color: rgb(255, 0, 0);
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .place-user {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .user {
+            padding-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .pagination {
+            margin-top: 20px;
+        }
+
+        .pagination a {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            text-decoration: none;
+            color: black;
+        }
+
+        .pagination a.active {
+            background-color: #282c34;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
+<nav>
+    <img src="../static/img/logo.png" class="logo">
+</nav>
+
+<div class="container">
+    <div class="box-form">
+        <form action="/comments/new/" method="post">
+            <input type="text" required name="name" class="username" placeholder="Your name">
+            <select id="category" required name="category" class="drop">
+                <option value="Positive">Positive</option>
+                <option value="Negative">Negative</option>
+            </select>
+            <textarea required name="comment" placeholder="Your comment"></textarea>
+            <input type="submit" class="submit" value="Send">
+        </form>
+    </div>
+
+    <div class="box-comment" id="comments">
+        {% for comment in comments %}
+        <div class="comment" style="padding-top: 20px">
+            <div class="place-user">
+                <img style="border-radius: 50px; height: 50px;width: 50px;" src="../static/img/User%20Icon.png">
+                <p class="user">{{ comment.name }}</p>
+                <div class="box">
+                    {% if comment.category == "Positive" %}
+                    <div class="category-box" style="background-color: green">
+                        <p>{{ comment.category }}</p>
+                    </div>
+                    {% else %}
+                    <div class="category-box">
+                        <p>{{ comment.category }}</p>
+                    </div>
+                    {% endif %}
+                    <p>{{ comment.date.strftime("%d/%m/%y %H:%M") }}</p>
+                </div>
+            </div>
+            <p style="padding-top: 15px;padding-bottom: 20px;">{{ comment.comment }}</p>
+        </div>
+        {% endfor %}
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="/?page={{ page - 1 }}&page_size={{ page_size }}">&laquo; Previous</a>
+            {% endif %}
+            {% if max_page > 1 %}
+            {% for p in range(1, max_page + 1) %}
+            {% if p == page %}
+            <a class="active" href="/?page={{ p }}&page_size={{ page_size }}">{{ p }}</a>
+            {% else %}
+            <a href="/?page={{ p }}&page_size={{ page_size }}">{{ p }}</a>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% if page < max_page %}
+            <a href="/?page={{ page + 1 }}&page_size={{ page_size }}">Next &raquo;</a>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
 </body>
 </html>
+

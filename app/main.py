@@ -1,51 +1,52 @@
 from fastapi import FastAPI, Form, Request
-from fastapi.middleware.cors import CORSMiddleware
 import datetime
+from fastapi.responses import RedirectResponse
 from .repository import CommentsRepository
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 repository = CommentsRepository()
+app.mount("/static", StaticFiles(directory="static"), name='static')
+
+templates = Jinja2Templates(directory="templates")
+
 
 @app.get("/")
-def read_index(request: Request):
+def read_index(request: Request, page: int = 1, page_size: int = 5):
     comments = repository.get_all()
+    total_comments = len(comments)
+    max_page = (total_comments - 1) // page_size + 1
 
-    return comments
-
-@app.get("/comments")
-def get_comments(request: Request, page: int = 1, page_size: int = CommentsRepository):
-    comments = repository.get_all()
-    current_time = datetime.datetime.now()
-    sorted_comments = sorted(comments, key=lambda x: abs(current_time - x["date"]))
     start = (page - 1) * page_size
     end = start + page_size
-    return sorted_comments[start:end]
+    paginated_comments = comments[start:end]
 
-@app.get ("/comments/new/")
-def read_comments(request: Request):
-    return {"request": request}
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "comments": paginated_comments,
+            "page": page,
+            "page_size": page_size,
+            "total_comments": total_comments,
+            "max_page": max_page,
+        },
+    )
+
 
 @app.post("/comments/new/")
-def add_comments(name: str = Form(),comment: str = Form(), category: str = Form()):
-    comment = {
+def add_comments(request:Request,name: str = Form(...), comment: str = Form(...), category: str = Form(...)):
+    comment_data = {
         "name": name,
         "comment": comment,
         "category": category,
         "date": datetime.datetime.now()
     }
-    repository.save(comment)
-    return comment
+    repository.save(comment_data)
+    return RedirectResponse("/",status_code=303)
+
+
+
 

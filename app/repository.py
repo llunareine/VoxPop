@@ -14,7 +14,7 @@ class CommentsRepository:
     def save(self, comm):
         if "id" not in comm or not comm["id"]:
             comm["id"] = self.get_next_id()
-        self.comments.append(comm)
+        self.comments.insert(0,comm)
         return comm
 
     def get_next_id(self):
